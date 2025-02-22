@@ -3,7 +3,7 @@ git add . && git commit -m "$(date)" && git push origin master
 # Variables
 SERVER_USER="catcoder"
 SERVER_IP="localhost"
-REMOTE_DIR="/home/catcoder/shared/meliProducts"
+REMOTE_DIR="/home/catcoder/shared/meliproducts"
 ZIP_FILE="lambda_function.zip"
 AWS_LAMBDA_FUNCTION="meliProductsAPI"
 GIT_BRANCH="develop_ms" # Cambia esto por la rama que desees
