@@ -1,0 +1,6 @@
+Flask
+aws-lambda-wsgi
+werkzeug
+requests
+dependency-injector
+pymongo
