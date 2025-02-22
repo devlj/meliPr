@@ -70,7 +70,7 @@ deploy_lambda() {
             --role "$ROLE_ARN" \
             --handler lambda_function.lambda_handler \
             --zip-file fileb://$ZIP_FILE \
-            --architectures arm64 \
+            --architectures x86_64 \
             --region "$REGION" \
             --query 'FunctionArn' --output text)
         echo "✅ Lambda creada con ARN: $LAMBDA_ARN"
