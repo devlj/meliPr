@@ -23,7 +23,7 @@ def lambda_handler(event, context):
         "statusCode": 200,
         "body": json.dumps({"message": "Hello from meliProductsAPI on ARM64!"})
     }
-' > lambda/lambda_function.py
+' > lambda/index.py
 
     cd lambda || exit
     zip -r9 ../$ZIP_FILE .
@@ -68,9 +68,9 @@ deploy_lambda() {
             --function-name "$LAMBDA_NAME" \
             --runtime python3.10 \
             --role "$ROLE_ARN" \
-            --handler lambda_function.lambda_handler \
+            --handler index.lambda_handler \
             --zip-file fileb://$ZIP_FILE \
-            --architectures x86_64 \
+            --architectures arm64 \
             --region "$REGION" \
             --query 'FunctionArn' --output text)
         echo "✅ Lambda creada con ARN: $LAMBDA_ARN"
@@ -81,30 +81,45 @@ deploy_lambda() {
     fi
 }
 
-# Función para crear/actualizar API Gateway con /meli/products
+# Función para crear/actualizar API Gateway con /meli/products/{proxy+}
 deploy_api_gateway() {
     echo "🚀 Creando/verificando recurso /meli/products en API Gateway..."
-    RESOURCE_ID=$(aws apigateway get-resources --rest-api-id "$API_ID" --region "$REGION" --query "items[?path=='/meli/products'].id" --output text)
+    PRODUCTS_RESOURCE_ID=$(aws apigateway get-resources --rest-api-id "$API_ID" --region "$REGION" --query "items[?path=='/meli/products'].id" --output text)
 
-    if [ -z "$RESOURCE_ID" ]; then
-        RESOURCE_ID=$(aws apigateway create-resource \
+    if [ -z "$PRODUCTS_RESOURCE_ID" ]; then
+        PRODUCTS_RESOURCE_ID=$(aws apigateway create-resource \
             --rest-api-id "$API_ID" \
             --parent-id "$PARENT_ID" \
             --path-part "products" \
             --region "$REGION" \
             --query 'id' --output text)
-        echo "✅ Recurso /meli/products creado con ID: $RESOURCE_ID"
+        echo "✅ Recurso /meli/products creado con ID: $PRODUCTS_RESOURCE_ID"
     else
-        echo "✅ Recurso /meli/products ya existe con ID: $RESOURCE_ID"
+        echo "✅ Recurso /meli/products ya existe con ID: $PRODUCTS_RESOURCE_ID"
     fi
 
-    echo "🚀 Configurando método ANY en /meli/products..."
-    aws apigateway put-method --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" --http-method ANY --authorization-type NONE --region "$REGION"
+    echo "🚀 Creando/verificando recurso /meli/products/{proxy+} en API Gateway..."
+    PROXY_RESOURCE_ID=$(aws apigateway get-resources --rest-api-id "$API_ID" --region "$REGION" --query "items[?path=='/meli/products/{proxy+}'].id" --output text)
+
+    if [ -z "$PROXY_RESOURCE_ID" ]; then
+        PROXY_RESOURCE_ID=$(aws apigateway create-resource \
+            --rest-api-id "$API_ID" \
+            --parent-id "$PRODUCTS_RESOURCE_ID" \
+            --path-part "{proxy+}" \
+            --region "$REGION" \
+            --query 'id' --output text)
+        echo "✅ Recurso /meli/products/{proxy+} creado con ID: $PROXY_RESOURCE_ID"
+    else
+        echo "✅ Recurso /meli/products/{proxy+} ya existe con ID: $PROXY_RESOURCE_ID"
+    fi
+
+    echo "🚀 Configurando método ANY en /meli/products/{proxy+}..."
+    aws apigateway put-method --rest-api-id "$API_ID" --resource-id "$PROXY_RESOURCE_ID" --http-method ANY --authorization-type NONE --region "$REGION"
 
     echo "🚀 Configurando integración con Lambda..."
     aws apigateway put-integration \
         --rest-api-id "$API_ID" \
-        --resource-id "$RESOURCE_ID" \
+        --resource-id "$PROXY_RESOURCE_ID" \
         --http-method ANY \
         --type AWS_PROXY \
         --integration-http-method POST \
@@ -118,7 +133,7 @@ deploy_api_gateway() {
         --statement-id "apigateway-invoke" \
         --action "lambda:InvokeFunction" \
         --principal "apigateway.amazonaws.com" \
-        --source-arn "arn:aws:execute-api:$REGION:$ACCOUNT_ID:$API_ID/*/ANY/meli/products" \
+        --source-arn "arn:aws:execute-api:$REGION:$ACCOUNT_ID:$API_ID/*/ANY/meli/products/{proxy+}" \
         --region "$REGION"
     echo "✅ Permisos de API Gateway para Lambda agregados."
 
@@ -127,39 +142,12 @@ deploy_api_gateway() {
     echo "✅ Despliegue exitoso."
 }
 
-# Función para hacer rollback
-rollback() {
-    echo "🚀 Eliminando recurso /meli/products de API Gateway..."
-    RESOURCE_ID=$(aws apigateway get-resources --rest-api-id "$API_ID" --region "$REGION" --query "items[?path=='/meli/products'].id" --output text)
-
-    if [ -n "$RESOURCE_ID" ]; then
-        aws apigateway delete-resource --rest-api-id "$API_ID" --resource-id "$RESOURCE_ID" --region "$REGION"
-        echo "✅ Recurso /meli/products eliminado."
-    else
-        echo "⚠️ No se encontró el recurso /meli/products."
-    fi
-}
-
-# Función para eliminar todo
-delete_all() {
-    echo "🚀 Eliminando Lambda..."
-    aws lambda delete-function --function-name "$LAMBDA_NAME" --region "$REGION"
-
-    echo "🚀 Eliminando recurso /meli/products de API Gateway..."
-    rollback
-
-    echo "🚀 Eliminando rol IAM..."
-    aws iam delete-role --role-name "$LAMBDA_ROLE_NAME" --region "$REGION"
-
-    echo "✅ Todo ha sido eliminado."
-}
-
 # Menú interactivo
 while true; do
     echo "========================="
     echo "🚀 MENÚ DE DESPLIEGUE 🚀"
     echo "1. Deploy completo"
-    echo "2. Rollback (Eliminar /meli/products)"
+    echo "2. Rollback (Eliminar /meli/products/{proxy+})"
     echo "3. Eliminar todo"
     echo "4. Salir"
     echo "========================="
