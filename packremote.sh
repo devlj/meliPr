@@ -6,7 +6,7 @@ SERVER_IP="localhost"
 REMOTE_DIR="/home/catcoder/shared/meliproducts"
 ZIP_FILE="lambda_function.zip"
 AWS_LAMBDA_FUNCTION="meliProductsAPI"
-GIT_BRANCH="develop_ms" # Cambia esto por la rama que desees
+GIT_BRANCH="master" # Cambia esto por la rama que desees
 # Conexión SSH y ejecución de comandos remotos
 ssh ${SERVER_USER}@${SERVER_IP} -p 2222 << EOF
     # Navegar al directorio
