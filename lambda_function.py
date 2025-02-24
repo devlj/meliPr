@@ -9,7 +9,7 @@ app = Flask(__name__)
 container = Container()
 
 app.register_blueprint(create_custom_routes(container.custom_controller()))
-app.register_blueprint(create_products_routes())
+app.register_blueprint(create_products_routes(container.products_controller()))
 
 #update
 def lambda_handler(event, context):

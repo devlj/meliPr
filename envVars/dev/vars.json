@@ -1,0 +1,7 @@
+{
+  "Environment": {
+    "Variables": {
+      "ACCESS_TOKEN_URL": "https://integraciones.infrastructure-t1.com/meli/refresh_token"
+    }
+  }
+}

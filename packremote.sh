@@ -25,8 +25,12 @@ EOF
 # Descargar el archivo lambda_function.zip desde el servidor
 scp -P 2222 ${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/${ZIP_FILE} .
 
+
 # Subir el archivo a AWS Lambda
 aws lambda update-function-code --function-name ${AWS_LAMBDA_FUNCTION} --zip-file fileb://${ZIP_FILE} >> /tmp/null
+
+
+aws lambda get-function-configuration --function-name ${AWS_LAMBDA_FUNCTION}
 
 # Mensaje de finalización
 echo "Archivo ${ZIP_FILE} subido a AWS Lambda para la función ${AWS_LAMBDA_FUNCTION}"

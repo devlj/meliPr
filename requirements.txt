@@ -4,3 +4,4 @@ werkzeug
 requests
 dependency-injector
 pymongo
+boto3
