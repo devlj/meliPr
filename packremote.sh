@@ -8,7 +8,7 @@ REMOTE_DIR="/home/catcoder/shared/meliproducts"
 ZIP_FILE="lambda_function.zip"
 AWS_LAMBDA_FUNCTION="meliProductsAPI"
 GIT_BRANCH="master" # Cambia esto por la rama que desees
-aws lambda update-function-configuration --function-name ${AWS_LAMBDA_FUNCTION} --cli-input-json file://envVars/dev/vars.json
+aws lambda update-function-configuration --function-name ${AWS_LAMBDA_FUNCTION} --cli-input-json file://envVars/dev/vars.json > /tmp/null
 # Conexión SSH y ejecución de comandos remotos
 ssh ${SERVER_USER}@${SERVER_IP} -p 2222 << EOF
     # Navegar al directorio
@@ -26,9 +26,6 @@ EOF
 
 # Descargar el archivo lambda_function.zip desde el servidor
 scp -P 2222 ${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/${ZIP_FILE} .
-
-
-
 # Subir el archivo a AWS Lambda
 aws lambda update-function-code --function-name ${AWS_LAMBDA_FUNCTION} --zip-file fileb://${ZIP_FILE} >> /tmp/null
 
