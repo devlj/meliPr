@@ -1,5 +1,5 @@
 #!/bin/bash
-aws lambda update-function-configuration --function-name ${AWS_LAMBDA_FUNCTION} --cli-input-json file://envVars/dev/vars.json
+
 git add . && git commit -m "$(date)" && git push origin master
 # Variables
 SERVER_USER="catcoder"
@@ -8,6 +8,7 @@ REMOTE_DIR="/home/catcoder/shared/meliproducts"
 ZIP_FILE="lambda_function.zip"
 AWS_LAMBDA_FUNCTION="meliProductsAPI"
 GIT_BRANCH="master" # Cambia esto por la rama que desees
+aws lambda update-function-configuration --function-name ${AWS_LAMBDA_FUNCTION} --cli-input-json file://envVars/dev/vars.json
 # Conexión SSH y ejecución de comandos remotos
 ssh ${SERVER_USER}@${SERVER_IP} -p 2222 << EOF
     # Navegar al directorio
