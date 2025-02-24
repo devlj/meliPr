@@ -1,5 +1,6 @@
 package/
 venv
+.venv
 .aws-sam
 lambda_function.zip
 .idea
