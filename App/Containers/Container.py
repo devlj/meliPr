@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from App.Controllers.CustomController import CustomController
 from App.Controllers.ProductsController import ProductsController
 from App.Dynamo.MeliUsers import MeliUsers
+from App.Services.AccessTokenService import AccessTokenService
 from App.Services.MeliUsersService import MeliUsersService
 from App.Services.ResponseHandlerService import ResponseHandlerService
 
@@ -14,6 +15,7 @@ class Container(containers.DeclarativeContainer):
     meli_users = providers.Factory(MeliUsers)
 
 
+    access_token_service = providers.Factory(AccessTokenService)
     meli_users_service = providers.Factory(MeliUsersService, meli_users)
 
     response_handler_service = providers.Factory(ResponseHandlerService)
