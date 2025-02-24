@@ -141,7 +141,42 @@ deploy_api_gateway() {
     aws apigateway create-deployment --rest-api-id "$API_ID" --stage-name "development" --region "$REGION"
     echo "✅ Despliegue exitoso."
 }
+# Función para eliminar todas las políticas de un rol
+detach_policies() {
+    echo "🔹 Eliminando políticas adjuntas al rol IAM..."
+    POLICY_ARNS=$(aws iam list-attached-role-policies --role-name "$LAMBDA_ROLE_NAME" --query 'AttachedPolicies[*].PolicyArn' --output text)
 
+    if [ -n "$POLICY_ARNS" ]; then
+        for POLICY_ARN in $POLICY_ARNS; do
+            aws iam detach-role-policy --role-name "$LAMBDA_ROLE_NAME" --policy-arn "$POLICY_ARN"
+            echo "✅ Desvinculada política: $POLICY_ARN"
+        done
+    else
+        echo "✅ No hay políticas adjuntas al rol."
+    fi
+}
+
+# Función para eliminar todo (Lambda, API Gateway y rol IAM)
+delete_all() {
+    echo "🚀 Eliminando Lambda..."
+    aws lambda delete-function --function-name "$LAMBDA_NAME" --region "$REGION" || echo "⚠️ No se encontró la Lambda."
+
+    echo "🚀 Eliminando recurso /meli/products/{proxy+} de API Gateway..."
+    PRODUCTS_RESOURCE_ID=$(aws apigateway get-resources --rest-api-id "$API_ID" --region "$REGION" --query "items[?path=='/meli/products/{proxy+}'].id" --output text)
+
+    if [ -n "$PRODUCTS_RESOURCE_ID" ]; then
+        aws apigateway delete-resource --rest-api-id "$API_ID" --resource-id "$PRODUCTS_RESOURCE_ID" --region "$REGION"
+        echo "✅ Recurso /meli/products/{proxy+} eliminado."
+    else
+        echo "⚠️ No se encontró el recurso /meli/products/{proxy+}."
+    fi
+
+    echo "🚀 Eliminando rol IAM..."
+    detach_policies  # Desvincular todas las políticas antes de eliminar el rol
+    aws iam delete-role --role-name "$LAMBDA_ROLE_NAME" --region "$REGION" || echo "⚠️ No se encontró el rol."
+
+    echo "✅ Todo ha sido eliminado."
+}
 # Menú interactivo
 while true; do
     echo "========================="
