@@ -30,7 +30,9 @@ scp -P 2222 ${SERVER_USER}@${SERVER_IP}:${REMOTE_DIR}/${ZIP_FILE} .
 aws lambda update-function-code --function-name ${AWS_LAMBDA_FUNCTION} --zip-file fileb://${ZIP_FILE} >> /tmp/null
 
 
-aws lambda get-function-configuration --function-name ${AWS_LAMBDA_FUNCTION}
+aws lambda update-function-configuration \
+  --function-name MiFuncionLambda \
+  --cli-input-json file://envVars/dev/vars.json
 
 # Mensaje de finalización
 echo "Archivo ${ZIP_FILE} subido a AWS Lambda para la función ${AWS_LAMBDA_FUNCTION}"
