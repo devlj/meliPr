@@ -31,7 +31,7 @@ aws lambda update-function-code --function-name ${AWS_LAMBDA_FUNCTION} --zip-fil
 
 
 aws lambda update-function-configuration \
-  --function-name MiFuncionLambda \
+  --function-name ${AWS_LAMBDA_FUNCTION} \
   --cli-input-json file://envVars/dev/vars.json
 
 # Mensaje de finalización
