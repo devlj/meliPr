@@ -21,9 +21,9 @@ import json
 def lambda_handler(event, context):
     return {
         "statusCode": 200,
-        "body": json.dumps({"message": "Hello from meliProductsAPI on ARM64!"})
+        "body": json.dumps({"message": "Hello from meliProductsAPI on x86_64!"})
     }
-' > lambda/index.py
+' > lambda/lambda_function.py
 
     cd lambda || exit
     zip -r9 ../$ZIP_FILE .
@@ -68,9 +68,9 @@ deploy_lambda() {
             --function-name "$LAMBDA_NAME" \
             --runtime python3.10 \
             --role "$ROLE_ARN" \
-            --handler index.lambda_handler \
+            --handler lambda_function.lambda_handler \
             --zip-file fileb://$ZIP_FILE \
-            --architectures arm64 \
+            --architectures x86_64 \
             --region "$REGION" \
             --query 'FunctionArn' --output text)
         echo "✅ Lambda creada con ARN: $LAMBDA_ARN"
@@ -185,6 +185,7 @@ while true; do
     echo "2. Rollback (Eliminar /meli/products/{proxy+})"
     echo "3. Eliminar todo"
     echo "4. Salir"
+    echo "5. deploy lambda flask"
     echo "========================="
     read -p "Selecciona una opción: " choice
 
@@ -193,6 +194,7 @@ while true; do
         2) rollback ;;
         3) delete_all ;;
         4) echo "👋 Saliendo..." && exit ;;
+        5) ./package.sh ;;
         *) echo "❌ Opción no válida. Intenta de nuevo." ;;
     esac
 done
