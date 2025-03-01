@@ -1,3 +1,4 @@
+from App.Services.MeliProducts import MeliProducts
 from App.Services.MeliUsersService import MeliUsersService
 from App.Services.ResponseHandlerService import ResponseHandlerService
 
@@ -5,10 +6,10 @@ from App.Services.ResponseHandlerService import ResponseHandlerService
 class ProductsController:
     def __init__(self,
                  responseHandlerService:ResponseHandlerService,
-                 meliUsersService:MeliUsersService
+                 meliProducts:MeliProducts,
                  ):
         self.responseHandlerService = responseHandlerService
-        self.meliUsersService = meliUsersService
+        self.meliProducts = meliProducts
         pass
 
     def notImplemented(self):
@@ -18,5 +19,6 @@ class ProductsController:
         if data is None or len(data) == 0:
             return self.responseHandlerService.bad_request("missing data")
         else:
-            self.meliUsersService.getMeliUserByShopId(data["shop_id"])
-            return self.responseHandlerService.ok(data)
+            categories = self.meliProducts.get_category_by_product_name(data)
+            self.responseHandlerService.setData(categories)
+            return self.responseHandlerService.ok("OK")

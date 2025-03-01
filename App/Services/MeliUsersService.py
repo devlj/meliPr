@@ -9,5 +9,7 @@ class MeliUsersService:
 
     def getMeliUserByShopId(self,shopId:int):
         user = self.dynamodb.get_users_by_shop_id(shopId)
-        print(user)
-        self.accessTokenService.refresh_access_token_via_api(user[0]["refresh_token"])
+        return user
+
+    def refreshAccessToken(self,user):
+        return self.accessTokenService.execption401(user)
