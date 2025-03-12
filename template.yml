@@ -17,7 +17,7 @@ Resources:
         Variables:
           MONGO_URI: "mongodb://t1IntegrationsAdmin2:admin_password@mongo:27017/t1Integrations"
           MONGO_DB_NAME: "t1Integrations"
-          ACCESS_TOKEN_URL: "https://integraciones.infrastructure-t1.com/meli/refresh_token"
+          ACCESS_TOKEN_URL: "https://integraciones.dev.infrastructure-t1.com/meli/refresh_token"
       Events:
         ApiGateway:
           Type: Api
