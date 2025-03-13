@@ -6,3 +6,4 @@ dependency-injector
 pymongo
 boto3
 requests_toolbelt
+marshmallow

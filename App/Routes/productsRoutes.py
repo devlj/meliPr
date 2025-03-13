@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 
 from App.Controllers.ProductsController import ProductsController
+from App.Middleware.ErrorHandlerMiddleware import apply_middleware_to_blueprint
 
 
 def create_products_routes(productsController: ProductsController):
@@ -30,7 +31,7 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
-    @products_routes.route('/meli/products/create', methods=['POST'])
+    @products_routes.route('/meli/products', methods=['POST'])
     def create_product():
         if request.method == 'POST':
             requestData = request.get_json()
@@ -54,4 +55,5 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
-    return products_routes
+    # Aplicar middleware de manejo de errores a todas las rutas
+    return apply_middleware_to_blueprint(products_routes)
