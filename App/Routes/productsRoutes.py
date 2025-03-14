@@ -7,7 +7,7 @@ from App.Middleware.ErrorHandlerMiddleware import apply_middleware_to_blueprint
 def create_products_routes(productsController: ProductsController):
     products_routes = Blueprint('products_routes', __name__)
 
-    @products_routes.route('/meli/products/category', methods=['POST'])
+    @products_routes.route('/meli/products/categories', methods=['POST'])
     def get_products():
         if request.method == 'POST':
             requestData = request.get_json()
@@ -15,7 +15,7 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
-    @products_routes.route('/meli/products/category/attributes', methods=['POST'])
+    @products_routes.route('/meli/products/categories/attributes', methods=['POST'])
     def get_category_attributes():
         if request.method == 'POST':
             requestData = request.get_json()
@@ -31,7 +31,7 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
-    @products_routes.route('/meli/products', methods=['POST'])
+    @products_routes.route('/meli/products/create', methods=['POST'])
     def create_product():
         if request.method == 'POST':
             requestData = request.get_json()
@@ -47,7 +47,22 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
-    @products_routes.route('/meli/products/update', methods=['POST'])
+    @products_routes.route('/meli/products/update/product', methods=['POST'])
+    def update_product():
+        if request.method == 'POST':
+            requestData = request.get_json()
+            return productsController.update_product(requestData)
+        else:
+            return productsController.notImplemented()
+    @products_routes.route('/meli/products/update/price', methods=['POST'])
+    def update_product():
+        if request.method == 'POST':
+            requestData = request.get_json()
+            return productsController.update_product(requestData)
+        else:
+            return productsController.notImplemented()
+
+    @products_routes.route('/meli/products/update/stock', methods=['POST'])
     def update_product():
         if request.method == 'POST':
             requestData = request.get_json()
