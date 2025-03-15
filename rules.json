@@ -1,0 +1,412 @@
+{
+  "data": {
+    "message": "Especificación de datos para validación en Mercado Libre",
+    "rules": {
+      "attributes": {
+        "description": "attributes",
+        "is_show": true,
+        "keys": {
+          "id": {
+            "description": "id",
+            "is_show": true,
+            "required": true,
+            "type": "string"
+          },
+          "value_name": {
+            "description": "value_name",
+            "is_show": true,
+            "required": true,
+            "type": "string"
+          }
+        },
+        "min_length": 1,
+        "required": true,
+        "type": "arrayObject"
+      },
+      "available_quantity": {
+        "description": "available_quantity",
+        "is_show": true,
+        "min": 1,
+        "required": true,
+        "type": "integer"
+      },
+      "buying_mode": {
+        "description": "buying_mode",
+        "is_show": true,
+        "required": true,
+        "type": "string"
+      },
+      "category_id": {
+        "description": "category_id",
+        "is_show": true,
+        "required": true,
+        "type": "string"
+      },
+      "condition": {
+        "description": "condition",
+        "is_show": true,
+        "required": true,
+        "type": "string"
+      },
+      "currency_id": {
+        "description": "currency_id",
+        "is_show": true,
+        "required": true,
+        "type": "string"
+      },
+      "description": {
+        "description": "description",
+        "is_show": true,
+        "keys": {
+          "plain_text": {
+            "description": "plain_text",
+            "is_show": true,
+            "min_length": 20,
+            "required": true,
+            "type": "string"
+          }
+        },
+        "required": true,
+        "type": "object"
+      },
+      "listing_type_id": {
+        "description": "listing_type_id",
+        "is_show": true,
+        "required": true,
+        "type": "string"
+      },
+      "photos_types_rules": {
+        "formats": [
+          "jpg",
+          "jpeg",
+          "png"
+        ],
+        "types": [
+          {
+            "description": "Imagen principal del producto",
+            "file_size_max_mb": 3,
+            "max_quantity": 1,
+            "min_quantity": 1,
+            "sizes_px": [
+              {
+                "max": 2200,
+                "min": 900,
+                "ratio": "1:1"
+              }
+            ],
+            "type": "MAIN"
+          },
+          {
+            "description": "Imágenes de detalle del producto",
+            "file_size_max_mb": 3,
+            "max_quantity": 10,
+            "min_quantity": 1,
+            "sizes_px": [
+              {
+                "max": 2200,
+                "min": 900,
+                "ratio": "1:1"
+              }
+            ],
+            "type": "DETAIL"
+          }
+        ]
+      },
+      "pictures": {
+        "description": "pictures",
+        "is_show": true,
+        "keys": {
+          "id": {
+            "description": "id",
+            "is_show": true,
+            "required": true,
+            "type": "string"
+          }
+        },
+        "min_length": 1,
+        "required": true,
+        "type": "arrayObject"
+      },
+      "price": {
+        "description": "price",
+        "is_show": true,
+        "min": 1,
+        "required": true,
+        "type": "double"
+      },
+      "sale_terms": {
+        "description": "sale_terms",
+        "is_show": true,
+        "keys": {
+          "id": {
+            "description": "id",
+            "is_show": true,
+            "required": true,
+            "type": "string"
+          },
+          "value_name": {
+            "description": "value_name",
+            "is_show": true,
+            "required": true,
+            "type": "string"
+          }
+        },
+        "required": false,
+        "type": "arrayObject"
+      },
+      "shipping": {
+        "description": "shipping",
+        "is_show": true,
+        "keys": {
+          "dimensions": {
+            "description": "dimensions",
+            "is_show": true,
+            "required": false,
+            "type": "string"
+          },
+          "free_shipping": {
+            "description": "free_shipping",
+            "is_show": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "local_pick_up": {
+            "description": "local_pick_up",
+            "is_show": true,
+            "required": false,
+            "type": "boolean"
+          },
+          "methods": {
+            "description": "methods",
+            "is_show": true,
+            "required": false,
+            "type": "arrayObject"
+          },
+          "mode": {
+            "description": "mode",
+            "is_show": true,
+            "required": false,
+            "type": "string"
+          }
+        },
+        "required": false,
+        "type": "object"
+      },
+      "title": {
+        "description": "title",
+        "is_show": true,
+        "max_length": 60,
+        "min_length": 10,
+        "required": true,
+        "type": "string"
+      },
+      "uniqueId": {
+        "description": "ID único del producto en sistema",
+        "is_show": false,
+        "required": true,
+        "type": "integer"
+      },
+      "variants": {
+        "description": "Lista de variantes del producto",
+        "is_show": true,
+        "keys": {
+          "attributes": {
+            "description": "Atributos que definen esta variante (color, talla, etc.)",
+            "is_show": true,
+            "keys": {
+              "id": {
+                "description": "ID del atributo que define la variante (ej: COLOR, SIZE)",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              },
+              "value_id": {
+                "description": "ID del valor del atributo",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              },
+              "value_name": {
+                "description": "Nombre del valor del atributo",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              }
+            },
+            "min_length": 1,
+            "required": true,
+            "type": "arrayObject"
+          },
+          "available_quantity": {
+            "description": "Cantidad disponible de esta variante",
+            "is_show": true,
+            "min": 0,
+            "required": true,
+            "type": "integer"
+          },
+          "id": {
+            "description": "ID de la variante en Mercado Libre (si ya existe)",
+            "is_show": true,
+            "required": false,
+            "type": "string"
+          },
+          "picture_ids": {
+            "description": "IDs de las imágenes específicas para esta variante",
+            "is_show": true,
+            "required": false,
+            "type": "arrayObject"
+          },
+          "price": {
+            "description": "Precio específico de esta variante",
+            "is_show": true,
+            "keys": {
+              "currency_id": {
+                "description": "ID de la moneda (ej: MXN)",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              },
+              "price": {
+                "description": "Precio del producto",
+                "is_show": true,
+                "min": 1,
+                "required": true,
+                "type": "double"
+              }
+            },
+            "required": false,
+            "type": "object"
+          }
+        },
+        "required": false,
+        "type": "arrayObject"
+      },
+      "variations": {
+        "description": "Configuración de variantes del producto",
+        "is_show": true,
+        "keys": {
+          "attribute_combinations": {
+            "description": "Combinaciones de atributos que definen las variantes",
+            "is_show": true,
+            "keys": {
+              "id": {
+                "description": "ID del atributo que define la variante (ej: COLOR, SIZE)",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              },
+              "value_id": {
+                "description": "ID del valor del atributo",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              },
+              "value_name": {
+                "description": "Nombre del valor del atributo",
+                "is_show": true,
+                "required": true,
+                "type": "string"
+              }
+            },
+            "min_length": 1,
+            "required": true,
+            "type": "arrayObject"
+          },
+          "variations": {
+            "description": "Lista de variantes del producto",
+            "is_show": true,
+            "keys": {
+              "attributes": {
+                "description": "Atributos que definen esta variante (color, talla, etc.)",
+                "is_show": true,
+                "keys": {
+                  "id": {
+                    "description": "ID del atributo que define la variante (ej: COLOR, SIZE)",
+                    "is_show": true,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "value_id": {
+                    "description": "ID del valor del atributo",
+                    "is_show": true,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "value_name": {
+                    "description": "Nombre del valor del atributo",
+                    "is_show": true,
+                    "required": true,
+                    "type": "string"
+                  }
+                },
+                "min_length": 1,
+                "required": true,
+                "type": "arrayObject"
+              },
+              "available_quantity": {
+                "description": "Cantidad disponible de esta variante",
+                "is_show": true,
+                "min": 0,
+                "required": true,
+                "type": "integer"
+              },
+              "id": {
+                "description": "ID de la variante en Mercado Libre (si ya existe)",
+                "is_show": true,
+                "required": false,
+                "type": "string"
+              },
+              "picture_ids": {
+                "description": "IDs de las imágenes específicas para esta variante",
+                "is_show": true,
+                "required": false,
+                "type": "arrayObject"
+              },
+              "price": {
+                "description": "Precio específico de esta variante",
+                "is_show": true,
+                "keys": {
+                  "currency_id": {
+                    "description": "ID de la moneda (ej: MXN)",
+                    "is_show": true,
+                    "required": true,
+                    "type": "string"
+                  },
+                  "price": {
+                    "description": "Precio del producto",
+                    "is_show": true,
+                    "min": 1,
+                    "required": true,
+                    "type": "double"
+                  }
+                },
+                "required": false,
+                "type": "object"
+              }
+            },
+            "max_length": 100,
+            "min_length": 1,
+            "required": true,
+            "type": "arrayObject"
+          }
+        },
+        "required": false,
+        "type": "object"
+      }
+    },
+    "timestamp": "2025-03-15T00:03:27.195301"
+  },
+  "metaData": {
+    "http_status": 200,
+    "http_status_phrase": "OK",
+    "is_error": false,
+    "message": "OK",
+    "time": 1741997006
+  },
+  "pagination": {
+    "current_page": 0,
+    "items_per_page": 0,
+    "total_items": 0,
+    "total_pages": 0
+  }
+}

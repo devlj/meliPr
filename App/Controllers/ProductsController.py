@@ -104,3 +104,15 @@ class ProductsController:
 
             self.responseHandlerService.setData(result)
             return self.responseHandlerService.ok("OK")
+
+    def get_product_rules(self, data):
+        from App.Utils.MeliRulesHelper import MeliRulesHelper
+
+        app_logger.info("Obteniendo reglas de producto")
+
+        # Usar el helper para extraer y normalizar las reglas
+        rules_helper = MeliRulesHelper()
+        rules = rules_helper.get_normalized_rules()
+
+        self.responseHandlerService.setData(rules)
+        return self.responseHandlerService.ok("OK")
