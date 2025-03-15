@@ -73,6 +73,7 @@ class ProductDataSchema(Schema):
                              description="Variantes del producto")
     shipping = fields.Dict(required=False,
                            description="Configuración de envío")
+    sale_terms = fields.List(fields.Dict(), required=False,description="Terminos del producto")
 
 
 class ProductCreateRequestSchema(Schema):

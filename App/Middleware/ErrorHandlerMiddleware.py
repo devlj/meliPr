@@ -47,7 +47,7 @@ def handle_errors(f):
         except Exception as e:
             app_logger.exception(f"Error inesperado: {str(e)} - Path: {request.path}")
             return jsonify({
-                "error": "Error interno del servidor",
+                "error": "Error interno del servidor " + e,
                 "status": "error"
             }), 500
 

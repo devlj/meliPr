@@ -165,29 +165,21 @@ class MeliSizeChartService:
         """
         Crea una nueva guía de tallas.
 
-        Endpoint: POST /size_charts
+        Endpoint: POST /catalog/charts
         """
         operation_name = "create_size_chart"
         try:
             shop_id = data.get('shop_id')
 
-            # Extraer datos de la guía de tallas
+            # Extraer datos de la guía de tallas manteniendo la estructura esperada por la API
             chart_data = {
-                "title": data.get('title'),
-                "description": data.get('description', ''),
-                "category_id": data.get('category_id'),
-                "site_id": "MLM",
-                "domain_id": data.get('domain_id',""),
-                "rows": []
+                "names": data.get('names'),
+                "domain_id": data.get('domain_id'),
+                "site_id": data.get('site_id'),
+                "main_attribute": data.get('main_attribute'),
+                "attributes": data.get('attributes'),
+                "rows": data.get('rows')
             }
-
-            # Procesar filas de tallas
-            for row in data.get('rows', []):
-                chart_row = {
-                    "size": row.get('size'),
-                    "measurements": row.get('measurements', [])
-                }
-                chart_data["rows"].append(chart_row)
 
             # Obtener usuario
             user = self._get_user_by_shop_id(shop_id)
@@ -200,8 +192,8 @@ class MeliSizeChartService:
                 "Authorization": f"Bearer {user['access_token']}",
                 "Content-Type": "application/json"
             }
-            print(chart_data)
-            print(f"{self.base_url}{endpoint}")
+
+            app_logger.info(f"Enviando solicitud para crear guía de tallas: {chart_data}")
             response = requests.post(f"{self.base_url}{endpoint}", headers=headers, json=chart_data)
 
             # Procesar respuesta

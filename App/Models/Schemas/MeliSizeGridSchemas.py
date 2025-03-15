@@ -1,36 +1,72 @@
 from marshmallow import Schema, fields, validates, validate, ValidationError
 
 
-class MeasurementSchema(Schema):
-    """Esquema para medidas específicas en una guía de tallas."""
-    id = fields.Str(required=True, description="ID del tipo de medida (ej: SHOULDER_WIDTH, LENGTH)")
-    value = fields.Float(required=True, description="Valor de la medida")
-    unit = fields.Str(required=True, description="Unidad de medida (ej: cm, in)")
+class ValueSchema(Schema):
+    """Esquema para valores de atributos en la guía de tallas."""
+    id = fields.Str(required=False, description="ID del valor (opcional)")
+    name = fields.Str(required=True, description="Nombre o valor del atributo")
 
 
-class SizeRowSchema(Schema):
-    """Esquema para una fila de talla en la guía."""
-    size = fields.Str(required=True, description="Nombre de la talla (ej: S, M, L)")
-    measurements = fields.List(
-        fields.Nested(MeasurementSchema),
+class AttributeValueSchema(Schema):
+    """Esquema para atributos con sus valores."""
+    id = fields.Str(required=True, description="ID del atributo (ej: AR_SIZE, FOOT_LENGTH)")
+    values = fields.List(
+        fields.Nested(ValueSchema),
         required=True,
         validate=validate.Length(min=1),
-        description="Medidas para esta talla"
+        description="Valores para este atributo"
+    )
+
+
+class MainAttributeSchema(Schema):
+    """Esquema para el atributo principal de la guía de tallas."""
+    attributes = fields.List(
+        fields.Nested(Schema.from_dict({
+            "site_id": fields.Str(required=True, description="ID del sitio (ej: MLA, MLM)"),
+            "id": fields.Str(required=True, description="ID del atributo principal")
+        })),
+        required=True,
+        validate=validate.Length(min=1),
+        description="Atributos principales"
+    )
+
+
+class RowSchema(Schema):
+    """Esquema para una fila de la guía de tallas."""
+    attributes = fields.List(
+        fields.Nested(AttributeValueSchema),
+        required=True,
+        validate=validate.Length(min=1),
+        description="Atributos que conforman esta fila de tallas"
     )
 
 
 class SizeChartCreateRequestSchema(Schema):
     """Esquema para solicitudes de creación de guías de tallas."""
     shop_id = fields.Str(required=True, description="ID de la tienda")
-    title = fields.Str(required=True, description="Título de la guía de tallas")
-    domain_id = fields.Str(required=True, description="Category domain ID")
-    description = fields.Str(required=False, description="Descripción de la guía de tallas (opcional)")
-    category_id = fields.Str(required=True, description="ID de la categoría para esta guía")
+    names = fields.Dict(
+        keys=fields.Str(),
+        values=fields.Str(),
+        required=True,
+        description="Nombres de la guía de tallas por sitio (ej: {'MLA': 'Guía de talles de calzado de hombre'})"
+    )
+    domain_id = fields.Str(required=True, description="ID del dominio de categoría (ej: SNEAKERS)")
+    site_id = fields.Str(required=True, description="ID del sitio (ej: MLA, MLM)")
+    main_attribute = fields.Nested(
+        MainAttributeSchema,
+        required=True,
+        description="Configuración del atributo principal"
+    )
+    attributes = fields.List(
+        fields.Nested(AttributeValueSchema),
+        required=True,
+        description="Atributos generales de la guía de tallas"
+    )
     rows = fields.List(
-        fields.Nested(SizeRowSchema),
+        fields.Nested(RowSchema),
         required=True,
         validate=validate.Length(min=1),
-        description="Filas de tallas con sus medidas"
+        description="Filas de la guía de tallas"
     )
 
 
