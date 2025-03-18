@@ -132,3 +132,74 @@ class SizeChartController:
         # Devolver resultado exitoso
         self.response_handler_service.setData(result)
         return self.response_handler_service.ok("OK")
+
+    def get_domain_required_attributes(self, data):
+        """Obtiene los atributos requeridos para guías de tallas en un dominio específico."""
+        if not data or 'domain_id' not in data:
+            app_logger.warning("Dominio faltante en get_domain_required_attributes")
+            return self.response_handler_service.bad_request("domain_id is required")
+
+        # Extraer datos
+        domain_id = data.get('domain_id')
+        site_id = data.get('site_id', 'MLM')  # Default a México
+
+        app_logger.info(f"Obteniendo atributos requeridos para dominio: {domain_id}")
+        result = self.meli_size_chart_service.get_domain_required_attributes(domain_id, site_id)
+
+        # Manejar errores
+        if "error" in result:
+            app_logger.warning(f"Error al obtener atributos requeridos: {result.get('error')}")
+            return self.response_handler_service.bad_request(result)
+
+        # Devolver resultado exitoso
+        self.response_handler_service.setData(result)
+        return self.response_handler_service.ok("OK")
+
+    def get_size_chart_template(self, data):
+        """Obtiene la ficha técnica específica para guías de tallas."""
+        if data is None or len(data) == 0:
+            app_logger.warning("Datos faltantes en get_size_chart_template")
+            return self.response_handler_service.bad_request("missing data")
+
+        # Verificar datos mínimos requeridos
+        if 'domain_id' not in data or 'attributes' not in data:
+            app_logger.warning("domain_id o attributes faltantes en get_size_chart_template")
+            return self.response_handler_service.bad_request("domain_id and attributes are required")
+
+        app_logger.info(f"Obteniendo ficha técnica para guías de tallas en dominio: {data.get('domain_id')}")
+        result = self.meli_size_chart_service.get_size_chart_template(data)
+
+        # Manejar errores
+        if "error" in result:
+            app_logger.warning(f"Error al obtener ficha técnica: {result.get('error')}")
+            return self.response_handler_service.bad_request(result)
+
+        # Devolver resultado exitoso
+        self.response_handler_service.setData(result)
+        return self.response_handler_service.ok("OK")
+
+    def create_simple_size_chart(self, data):
+        """Crea una guía de tallas utilizando un formato simplificado."""
+        if data is None or len(data) == 0:
+            app_logger.warning("Datos faltantes en create_simple_size_chart")
+            return self.response_handler_service.bad_request("missing data")
+
+        # Verificar datos mínimos requeridos
+        required_fields = ['shop_id', 'domain_id', 'chart_name', 'brand', 'gender', 'rows']
+        missing_fields = [field for field in required_fields if field not in data]
+
+        if missing_fields:
+            app_logger.warning(f"Campos faltantes en create_simple_size_chart: {', '.join(missing_fields)}")
+            return self.response_handler_service.bad_request(f"Missing required fields: {', '.join(missing_fields)}")
+
+        app_logger.info(f"Creando guía de tallas simplificada para dominio: {data.get('domain_id')}")
+        result = self.meli_size_chart_service.create_simple_size_chart(data)
+
+        # Manejar errores
+        if "error" in result:
+            app_logger.warning(f"Error al crear guía de tallas: {result.get('error')}")
+            return self.response_handler_service.bad_request(result)
+
+        # Devolver resultado exitoso
+        self.response_handler_service.setData(result)
+        return self.response_handler_service.ok("Guía de tallas creada exitosamente")

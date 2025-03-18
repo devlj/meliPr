@@ -67,5 +67,37 @@ def create_size_chart_routes(size_chart_controller: SizeChartController):
         else:
             return size_chart_controller.not_implemented()
 
+    @size_chart_routes.route('/meli/products/domains/<string:domain_id>/required_attributes', methods=['GET'])
+    def get_domain_required_attributes(domain_id):
+        """Obtiene los atributos requeridos para guías de tallas en un dominio específico."""
+        if request.method == 'GET':
+            # Convertir query params a dict y añadir el domain_id
+            query_data = request.args.to_dict()
+            query_data['domain_id'] = domain_id
+            return size_chart_controller.get_domain_required_attributes(query_data)
+        else:
+            return size_chart_controller.not_implemented()
+
+    @size_chart_routes.route('/meli/products/domains/<string:domain_id>/size_charts_template', methods=['POST'])
+    def get_size_chart_template(domain_id):
+        """Obtiene la ficha técnica específica para guías de tallas."""
+        if request.method == 'POST':
+            # Obtener datos del body
+            request_data = request.get_json()
+            # Añadir domain_id a los datos
+            request_data['domain_id'] = domain_id
+            return size_chart_controller.get_size_chart_template(request_data)
+        else:
+            return size_chart_controller.not_implemented()
+
+    @size_chart_routes.route('/meli/products/size_charts/simple', methods=['POST'])
+    def create_simple_size_chart():
+        """Crea una guía de tallas utilizando un formato simplificado."""
+        if request.method == 'POST':
+            request_data = request.get_json()
+            return size_chart_controller.create_simple_size_chart(request_data)
+        else:
+            return size_chart_controller.not_implemented()
+
     # Aplicar middleware de manejo de errores
     return apply_middleware_to_blueprint(size_chart_routes)
