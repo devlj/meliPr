@@ -55,7 +55,7 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
     @products_routes.route('/meli/products/update/price', methods=['POST'])
-    def update_product():
+    def update_price_product():
         if request.method == 'POST':
             requestData = request.get_json()
             return productsController.update_product(requestData)
@@ -63,7 +63,7 @@ def create_products_routes(productsController: ProductsController):
             return productsController.notImplemented()
 
     @products_routes.route('/meli/products/update/stock', methods=['POST'])
-    def update_product():
+    def update_stock_product():
         if request.method == 'POST':
             requestData = request.get_json()
             return productsController.update_product(requestData)
