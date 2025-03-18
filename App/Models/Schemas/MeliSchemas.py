@@ -74,6 +74,7 @@ class ProductDataSchema(Schema):
     shipping = fields.Dict(required=False,
                            description="Configuración de envío")
     sale_terms = fields.List(fields.Dict(), required=False,description="Terminos del producto")
+    accepts_mercadopago = fields.Boolean(required=False, description="Acepta mercadopago")
 
 
 class ProductCreateRequestSchema(Schema):
