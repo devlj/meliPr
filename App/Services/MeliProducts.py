@@ -609,3 +609,221 @@ class MeliProducts:
                 f"Error en la solicitud: {str(e)}",
                 {"error_type": "network_error"}
             )
+
+    def get_category_tree(self, data):
+        """
+        Obtiene el árbol de categorías de Mercado Libre de forma recursiva, incluyendo información de padres.
+
+        Args:
+            data (dict): Diccionario con los siguientes campos:
+                - shop_id (str): ID de la tienda
+                - site_id (str, opcional): ID del sitio (default: 'MLM' para México)
+                - category_id (str, opcional): ID de categoría inicial para empezar desde una subcategoría
+                - max_depth (int, opcional): Profundidad máxima de recursión (default: 3)
+                - include_parents (bool, opcional): Si es True, incluirá la ruta completa de padres para cada categoría
+
+        Returns:
+            dict: Árbol de categorías estructurado con hijos anidados e información de padres
+        """
+        operation_name = "get_category_tree"
+        try:
+            # Validar datos
+            app_logger.info(f"Iniciando {operation_name} para shop_id: {data.get('shop_id', 'desconocido')}")
+
+            shop_id = data.get('shop_id')
+            site_id = data.get('site_id', 'MLM')  # Default a México
+            category_id = data.get('category_id')  # Opcional, para iniciar en una categoría específica
+            max_depth = int(data.get('max_depth', 3))  # Limitar profundidad de recursión para evitar sobrecarga
+            include_parents = data.get('include_parents', True)  # Por defecto, incluir información de padres
+
+            # Obtener usuario
+            user = self._get_user_by_shop_id(shop_id)
+
+            # Obtener árbol de categorías con padres
+            tree = self.__invoke_category_tree(site_id, category_id, user, max_depth)
+
+            result = {
+                "site_id": site_id,
+                "tree": tree,
+                "include_parents": include_parents
+            }
+
+            if category_id:
+                result["category_id"] = category_id
+
+                # Si estamos empezando de una categoría específica y queremos incluir sus padres,
+                # obtenemos la información de esa categoría para tener más contexto
+                if include_parents:
+                    try:
+                        headers = {"Authorization": f"Bearer {user['access_token']}"}
+                        path_response = requests.get(f"{self.base_url}/categories/{category_id}", headers=headers)
+                        category_data = self._handle_api_response(
+                            path_response,
+                            "get_category_detail",
+                            user.get("user_id")
+                        )
+
+                        # Agregar información de la categoría actual al resultado
+                        result["category_name"] = category_data.get("name")
+
+                        # Obtener la ruta completa hacia la raíz
+                        path_from_root = category_data.get("path_from_root", [])
+                        if path_from_root:
+                            result["path_from_root"] = path_from_root
+                            app_logger.info(
+                                f"Obtenida ruta desde la raíz para categoría {category_id} con {len(path_from_root)} niveles")
+                    except Exception as e:
+                        app_logger.warning(f"No se pudo obtener información adicional para {category_id}: {str(e)}")
+
+            return result
+
+        except ValidationError as err:
+            return {"error": "Error de validación", "details": err.messages}
+        except MeliApiError as err:
+            return {"error": err.message, "details": err.details, "status_code": err.status_code}
+        except NotFoundError as err:
+            return {"error": err.message, "resource_type": err.resource_type, "resource_id": err.resource_id}
+        except Exception as e:
+            app_logger.exception(f"Error inesperado en {operation_name}: {str(e)}")
+            return {"error": "Error interno del servidor", "details": str(e)}
+
+    def __invoke_category_tree(self, site_id, category_id, user, max_depth, current_depth=0, parent_path=None):
+        """
+        Implementación recursiva para obtener el árbol de categorías incluyendo información de padres.
+
+        Args:
+            site_id (str): ID del sitio (ej: 'MLM')
+            category_id (str, opcional): ID de la categoría actual
+            user (dict): Información del usuario con token de acceso
+            max_depth (int): Profundidad máxima de recursión
+            current_depth (int): Profundidad actual en la recursión
+            parent_path (list, opcional): Lista de categorías padre con formato [{"id": "ID", "name": "NOMBRE"}, ...]
+
+        Returns:
+            list: Lista de categorías con sus hijos anidados y referencias a padres
+        """
+        # Inicializar la ruta de padres si es None
+        if parent_path is None:
+            parent_path = []
+
+        # Limitar la profundidad de recursión para evitar problemas de rendimiento o timeouts
+        if current_depth >= max_depth:
+            app_logger.info(f"Alcanzada profundidad máxima ({max_depth}) de recursión para árbol de categorías")
+            return []
+
+        headers = {
+            "Authorization": f"Bearer {user['access_token']}"
+        }
+
+        try:
+            tree = []
+
+            # Si no hay category_id, obtener categorías raíz
+            if not category_id:
+                app_logger.info(f"Obteniendo categorías raíz para sitio {site_id}")
+                response = requests.get(f"{self.base_url}/sites/{site_id}/categories", headers=headers)
+                data = self._handle_api_response(
+                    response,
+                    "get_category_tree_root",
+                    user.get("user_id"),
+                    self.__invoke_category_tree,
+                    (site_id, None, user, max_depth, current_depth, parent_path)
+                )
+
+                for category in data:
+                    # Construir el breadcrumb como string
+                    breadcrumb = " > ".join([parent["name"] for parent in parent_path])
+
+                    cat_info = {
+                        "id": category.get("id"),
+                        "name": category.get("name"),
+                        "path": parent_path.copy(),  # Copiar la ruta de padres actuales
+                        "breadcrumb": breadcrumb,  # Añadir el breadcrumb
+                        "children": []
+                    }
+
+                    # Crear nueva ruta para los hijos que incluye esta categoría como padre
+                    new_parent_path = parent_path.copy()
+                    new_parent_path.append({"id": cat_info["id"], "name": cat_info["name"]})
+
+                    # Llamada recursiva para obtener hijos
+                    if current_depth < max_depth - 1:
+                        app_logger.info(f"Obteniendo hijos para categoría {cat_info['id']} (nivel {current_depth})")
+                        cat_info["children"] = self.__invoke_category_tree(
+                            site_id, cat_info["id"], user, max_depth, current_depth + 1, new_parent_path
+                        )
+
+                    tree.append(cat_info)
+            else:
+                # Obtener información de la categoría específica
+                app_logger.info(f"Obteniendo detalles para categoría {category_id}")
+                response = requests.get(f"{self.base_url}/categories/{category_id}", headers=headers)
+                data = self._handle_api_response(
+                    response,
+                    "get_category_detail",
+                    user.get("user_id"),
+                    self.__invoke_category_tree,
+                    (site_id, category_id, user, max_depth, current_depth, parent_path)
+                )
+
+                # Obtener información completa de la categoría actual para asegurarnos de tener todos los datos
+                # Especialmente útil si estamos comenzando desde una categoría intermedia
+                if current_depth == 0 and category_id and len(parent_path) == 0:
+                    # Intentar obtener la ruta completa de padres para esta categoría
+                    try:
+                        path_response = requests.get(f"{self.base_url}/categories/{category_id}/path_from_root",
+                                                     headers=headers)
+                        path_data = self._handle_api_response(
+                            path_response,
+                            "get_category_path",
+                            user.get("user_id")
+                        )
+
+                        # Construir la ruta de padres
+                        for path_item in path_data[:-1]:  # Excluir la categoría actual
+                            parent_path.append({"id": path_item.get("id"), "name": path_item.get("name")})
+
+                        app_logger.info(
+                            f"Obtenida ruta de padres para categoría {category_id}: {len(parent_path)} niveles")
+                    except Exception as e:
+                        app_logger.warning(f"No se pudo obtener la ruta de padres para {category_id}: {str(e)}")
+
+                # Procesar hijos
+                children = data.get("children_categories", [])
+                for child in children:
+                    # Construir el breadcrumb como string
+                    breadcrumb = " > ".join([parent["name"] for parent in parent_path])
+
+                    child_info = {
+                        "id": child.get("id"),
+                        "name": child.get("name"),
+                        "path": parent_path.copy(),  # Copiar la ruta de padres actuales
+                        "breadcrumb": breadcrumb,  # Añadir el breadcrumb
+                        "children": []
+                    }
+
+                    # Crear nueva ruta para los nietos
+                    new_parent_path = parent_path.copy()
+                    new_parent_path.append({"id": child_info["id"], "name": child_info["name"]})
+
+                    # Llamada recursiva para obtener nietos
+                    if current_depth < max_depth - 1:
+                        app_logger.info(
+                            f"Obteniendo hijos para categoría {child_info['id']} (nivel {current_depth + 1})")
+                        child_info["children"] = self.__invoke_category_tree(
+                            site_id, child_info["id"], user, max_depth, current_depth + 1, new_parent_path
+                        )
+
+                    tree.append(child_info)
+
+            # Limitar el logging para evitar mensajes excesivos
+            if current_depth == 0:
+                app_logger.info(f"Árbol de categorías obtenido con {len(tree)} categorías de nivel superior")
+
+            return tree
+
+        except MeliApiError as err:
+            raise err
+        except requests.exceptions.RequestException as e:
+            app_logger.exception(f"Error de red al obtener árbol de categorías: {str(e)}")
+            raise MeliApiError(500, f"Error en la solicitud: {str(e)}", {"error_type": "network_error"})

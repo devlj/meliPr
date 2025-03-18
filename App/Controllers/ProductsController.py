@@ -116,3 +116,61 @@ class ProductsController:
 
         self.responseHandlerService.setData(rules)
         return self.responseHandlerService.ok("OK")
+
+    # Agregar este método en la clase ProductsController
+
+    def get_category_tree(self, data):
+        """
+        Controlador para obtener el árbol de categorías de forma recursiva con información de padres.
+
+        Args:
+            data (dict): Datos de la solicitud que incluyen:
+                - shop_id (str): ID de la tienda
+                - site_id (str, opcional): ID del sitio (default: 'MLM')
+                - category_id (str, opcional): Categoría inicial
+                - max_depth (int, opcional): Profundidad máxima de recursión
+                - include_parents (bool, opcional): Si es True, incluirá la ruta completa de padres
+                - fetch_pathways (bool, opcional): Si es True, obtendrá rutas adicionales de categorías
+
+        Returns:
+            Response: Respuesta HTTP con el árbol de categorías o error
+        """
+        if data is None or len(data) == 0:
+            app_logger.warning("Datos faltantes en get_category_tree")
+            return self.responseHandlerService.bad_request("missing data")
+
+        if 'shop_id' not in data:
+            app_logger.warning("shop_id es obligatorio para obtener árbol de categorías")
+            return self.responseHandlerService.bad_request("shop_id is required")
+
+        app_logger.info(f"Obteniendo árbol de categorías para shop_id: {data.get('shop_id')}")
+
+        # Validar max_depth para prevenir sobrecarga
+        if 'max_depth' in data:
+            try:
+                max_depth = int(data['max_depth'])
+                if max_depth > 5:
+                    app_logger.warning(f"max_depth ({max_depth}) es demasiado grande, limitando a 5")
+                    data['max_depth'] = 5
+            except ValueError:
+                app_logger.warning(f"max_depth inválido ({data['max_depth']}), usando valor predeterminado")
+                data['max_depth'] = 3
+
+        # Manejar parámetros booleanos que pueden venir como strings
+        if 'include_parents' in data and isinstance(data['include_parents'], str):
+            data['include_parents'] = data['include_parents'].lower() in ('true', '1', 't', 'y', 'yes')
+
+        if 'fetch_pathways' in data and isinstance(data['fetch_pathways'], str):
+            data['fetch_pathways'] = data['fetch_pathways'].lower() in ('true', '1', 't', 'y', 'yes')
+
+        # Llamar al servicio para obtener el árbol
+        result = self.meliProducts.get_category_tree(data)
+
+        # Verificar errores en la respuesta
+        if "error" in result:
+            app_logger.warning(f"Error al obtener árbol de categorías: {result.get('error')}")
+            return self.responseHandlerService.bad_request(result)
+
+        # Devolver resultado exitoso
+        self.responseHandlerService.setData(result)
+        return self.responseHandlerService.ok("Árbol de categorías obtenido correctamente")

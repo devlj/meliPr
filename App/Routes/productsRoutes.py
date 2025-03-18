@@ -78,5 +78,25 @@ def create_products_routes(productsController: ProductsController):
         else:
             return productsController.notImplemented()
 
+    # Agregar esta ruta en productsRoutes.py dentro de la función create_products_routes
+
+    @products_routes.route('/meli/products/categories/tree', methods=['POST', 'GET'])
+    def get_category_tree():
+        """
+        Obtiene el árbol de categorías de Mercado Libre de forma recursiva.
+        Acepta peticiones GET con query params o POST con JSON.
+        """
+        if request.method == 'POST':
+            # Para solicitudes POST con datos JSON
+            requestData = request.get_json()
+            return productsController.get_category_tree(requestData)
+        elif request.method == 'GET':
+            # Para solicitudes GET con query params
+            # Convertir query params a dict
+            requestData = request.args.to_dict()
+            return productsController.get_category_tree(requestData)
+        else:
+            return productsController.notImplemented()
+
     # Aplicar middleware de manejo de errores a todas las rutas
     return apply_middleware_to_blueprint(products_routes)
